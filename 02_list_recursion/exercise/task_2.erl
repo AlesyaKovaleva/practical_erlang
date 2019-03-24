@@ -7,8 +7,9 @@
 
 %% implement erlang:length/1
 %% http://www.erlang.org/doc/man/erlang.html#length-1
-len(List) ->
-    0.
+len([]) -> 0;
+
+len([_ | D]) -> 1 + len(D).
 
 
 len_test() ->
@@ -22,8 +23,12 @@ len_test() ->
 
 %% implement lists:reverse/1
 %% http://www.erlang.org/doc/man/lists.html#reverse-1
-reverse(List) ->
-    List.
+reverse(List) -> reverse(List, []).
+
+
+reverse([], Acc) -> Acc;
+
+reverse([H | D], Acc) -> reverse(D, [H | Acc]).
 
 
 reverse_test() ->
