@@ -7,8 +7,11 @@
 
 %% implement lists:member/2
 %% http://www.erlang.org/doc/man/lists.html#member-2
-member(Elem, List) ->
-    false.
+member(_, []) -> false;
+
+member(H, [H|_]) -> true; 
+
+member(H, [_|T]) -> member(H, T).
 
 
 member_test() ->
@@ -22,8 +25,15 @@ member_test() ->
 
 %% implement lists:filter/2
 %% http://www.erlang.org/doc/man/lists.html#filter-2
-filter(Pred, List) ->
-    List.
+filter(Pred, List) -> filter(Pred, List, []).
+
+filter(_, [], Acc) -> lists:reverse(Acc);
+
+filter(Pred, [H | D], Acc) -> 
+    case Pred(H) of 
+        true -> filter(Pred, D, [H|Acc]);
+        false -> filter(Pred, D, Acc)
+    end.
 
 
 filter_test() ->

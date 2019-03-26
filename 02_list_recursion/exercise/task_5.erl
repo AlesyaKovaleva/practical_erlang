@@ -7,8 +7,20 @@
 
 %% implement lists:splitwith/2
 %% http://www.erlang.org/doc/man/lists.html#splitwith-2
-splitwith(Pred, List) ->
-    {[], []}.
+splitwith(Pred, List) -> splitwith(Pred, List, []).
+
+
+splitwith(_, [], Acc) -> {lists:reverse(Acc), []};
+
+splitwith(Pred, [H|D], Acc) ->
+    case Pred(H) of 
+        true -> splitwith(Pred, D, [H|Acc]);
+        false -> {lists:reverse(Acc), [H|D]}
+    end.
+
+
+% splitwith(Pred, List) ->
+%     {task_4:takewhile(Pred, List), task_4:dropwhile(Pred, List)}.
 
 
 splitwith_test() ->
@@ -25,8 +37,11 @@ splitwith_test() ->
 %% implement lists:zipwith/3
 %% http://www.erlang.org/doc/man/lists.html#zipwith-3
 %% if two lists have different lengths don't throw exception but ignore the rest of longer list
-zipwith(Pred, List1, List2) ->
-    [].
+zipwith(_, [], _) -> [];
+
+zipwith(_, _, []) -> [] ;
+
+zipwith(Pred, [X|Xtail],[Y|Ytail]) -> [Pred(X,Y)|zipwith(Pred, Xtail,Ytail)].
 
 
 zipwith_test() ->
