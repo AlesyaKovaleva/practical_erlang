@@ -1,7 +1,17 @@
 -module(main).
 
--export([sample_champ/0, get_stat/1, filter_sick_players/1, make_pairs/2]).
+-export([
+    sample_champ/0, 
+    get_stat/1, 
+    filter_sick_players/1, 
+    make_pairs/2, 
+    team_stat/1, 
+    filter_healthy_players/1
+]).
+
 -include_lib("eunit/include/eunit.hrl").
+
+-include("records.hrl").
 
 
 sample_champ() ->
@@ -59,8 +69,40 @@ sample_champ() ->
     ].
 
 
+team_stat({team, _Name, Players}) ->
+    lists:foldl(
+        fun({player, _, Age, Rating, _}, Acc) ->
+            #team_stat{num_players = NP, total_age = TA, total_rating = TR} = Acc,
+            Acc2 = #team_stat{
+                num_players = NP + 1, 
+                total_age = TA + Age, 
+                total_rating = TR + Rating
+            },
+            Acc2
+        end,
+        #team_stat{},
+        Players
+    ).
+
+
 get_stat(Champ) ->
-    {0, 0, 0.0, 0.9}.
+    Teams_stat = [team_stat(X) || X <- Champ],
+    {stat, Num_Teams, Num_Players, Avg_age, Avg_rating} = lists:foldl(
+        fun(Team, Acc) ->
+            #team_stat{num_players = NP, total_age = TA, total_rating = TR} = Team,
+            #stat{num_teams = SNT, num_players = SNP, sum_age = SA, sum_rating = SR} = Acc,
+            Acc2 = #stat{
+                num_teams = SNT+1, 
+                num_players = SNP+NP, 
+                sum_age = SA+TA, 
+                sum_rating = SR+TR
+            },
+            Acc2
+        end,
+        #stat{},
+        Teams_stat
+    ),
+    {Num_Teams, Num_Players, Avg_age / Num_Players, Avg_rating / Num_Players}.
 
 
 get_stat_test() ->
@@ -68,8 +110,19 @@ get_stat_test() ->
     ok.
 
 
+filter_healthy_players({team, _Name, Players}) ->
+    lists:filter(
+        fun({player, _, _, _, Health}) -> Health >= 50 end, 
+        Players
+    ).
+
+
 filter_sick_players(Champ) ->
-    Champ.
+    [
+        {team, TName, filter_healthy_players(Team)} || {team, TName, _Players} = Team <- Champ, 
+        length(filter_healthy_players(Team)) > 5
+    ].
+
 
 
 filter_sick_players_test() ->
@@ -105,7 +158,13 @@ filter_sick_players_test() ->
 
 
 make_pairs(Team1, Team2) ->
-    [].
+    {team, _, Players1} = Team1,
+    {team, _, Players2} = Team2,
+    [
+        {Name1, Name2} || {player, Name1, _, Rate1, _} <- Players1, 
+                          {player, Name2, _, Rate2, _} <- Players2,
+                          Rate1 + Rate2 > 600
+    ].
 
 
 make_pairs_test() ->
