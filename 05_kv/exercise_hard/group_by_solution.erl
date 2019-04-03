@@ -44,8 +44,11 @@ group_by_gender1(Users) ->
 group_by_main(Fun, List) ->
     Values = [Fun(User) || User <- List],
     lists:foldl(
-        fun({Criteria, _User}, Map) ->
-            maps:put(Criteria, [U || {Crit, U}  <- Values, Crit == Criteria], Map)
+        fun({Criteria, User}, Map) ->
+            case maps:find(Criteria, Map) of 
+                {ok, Value} -> maps:put(Criteria, [User | Value], Map);
+                error -> maps:put(Criteria, [User], Map)
+            end
         end,
         #{},
         Values
