@@ -5,7 +5,7 @@
 -export([init/0,
          add_idea/5, get_idea/1,
          ideas_by_author/1, ideas_by_rating/1,
-         get_authors/0]).
+         get_authors/0, compare/2]).
 
 -record(idea, {id, title, author, rating, description}).
 
@@ -37,20 +37,54 @@ init() ->
 
 
 add_idea(Id, Title, Author, Rating, Description) ->
+    Data = #idea{id = Id, title = Title, author = Author, rating = Rating, description = Description},
+    ets:insert(great_ideas_table, Data),
     ok.
 
 
 get_idea(Id) ->
-    not_found.
+      case ets:lookup(great_ideas_table, Id) of 
+            [] -> not_found;
+            [Data] -> {ok, Data}
+      end.
 
 
 ideas_by_author(Author) ->
-    [].
+    Pattern = {idea, '$1', '$2', Author, '$4', '$5'},  
+    ets:match_object(great_ideas_table, Pattern).
 
 
 ideas_by_rating(Rating) ->
-    [].
+      MS = ets:fun2ms(
+            fun({idea, Id, Title, Author, Rat, Description} = Idea)
+                  when Rat >= Rating -> Idea
+            end
+      ),
+      ets:select(great_ideas_table, MS).
 
 
 get_authors() ->
-    [].
+      MS = ets:fun2ms(
+            fun({idea, Id, Title, Author, Rat, Description}) -> Author end
+      ),
+      Result = ets:select(great_ideas_table, MS),
+
+      Values = lists:foldl(
+            fun(Author, Map) ->
+                  case maps:find(Author, Map) of 
+                        {ok, Count} -> maps:put(Author, Count+1, Map);
+                        error -> maps:put(Author, 1, Map)
+                  end
+            end,
+            #{},
+            Result
+      ),
+
+      lists:sort(fun compare/2, maps:to_list(Values)).
+
+
+compare({A1, C1}, {A2, C2}) -> 
+      case C1 == C2 of 
+            true -> A1 < A2;
+            _ -> C2 < C1
+      end.
