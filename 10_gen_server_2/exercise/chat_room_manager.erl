@@ -4,7 +4,7 @@
 -export([start_link/0,
          create_room/1, get_rooms/0,
          add_user/3, remove_user/2, get_users/1,
-         send_message/3,  get_history/1]).
+         send_message/3,  get_history/1, close_room/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 
@@ -72,6 +72,8 @@ get_history(PidRoom) ->
 
 
 % Не возбраняется реализовать и функцию **close_room/1** и добавить для нее тест :)
+close_room(PidRoom) ->
+    gen_server:call(?MODULE, {close_room, PidRoom}).
 
 
 init([]) -> 
@@ -81,6 +83,15 @@ init([]) ->
 handle_cast({create_room, {RoomName, PidRoom}}, #state{rooms = Rooms} = State) ->
     NewState = State#state{rooms = [{RoomName, PidRoom} | Rooms]},
     {noreply, NewState}.
+
+
+handle_call({close_room, PidRoom}, _From, #state{rooms = Rooms} = State) ->
+    {Reply, State1} = case lists:keymember(PidRoom, 2, Rooms) of 
+                false -> {{error, room_not_found}, State};
+                true -> NewState = State#state{rooms = lists:keydelete(PidRoom, 2, Rooms)},
+                {chat_room:stop(PidRoom), NewState}
+            end,
+    {reply, Reply, State1};
 
 
 handle_call(get_rooms, _From, State) ->

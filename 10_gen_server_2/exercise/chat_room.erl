@@ -1,7 +1,7 @@
 -module(chat_room).
 -behavior(gen_server).
 
--export([start_link/0, add_user/3, remove_user/2, get_users/1, add_message/3, get_history/1]).
+-export([start_link/0, add_user/3, remove_user/2, get_users/1, add_message/3, get_history/1, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(state, {
@@ -33,9 +33,16 @@ add_message(PidRoom, UserName, Message) ->
 get_history(PidRoom) ->
     gen_server:call(PidRoom, get_history).
 
+stop(PidRoom) ->
+    gen_server:call(PidRoom, stop).
+
 
 init([]) ->
     {ok, #state{}}.
+
+
+handle_call(stop, _From, State) ->
+    {stop, normal, ok, State};
 
 
 handle_call({remove_user, PidUser}, _From, #state{users = Users} = State) -> 

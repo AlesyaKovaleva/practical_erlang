@@ -99,4 +99,16 @@ chat_room_manager_test() ->
     ?assertEqual([{<<"Bob">>, <<"Hello">>}, {<<"Helen">>, <<"Hi">>}],
                  chat_user:get_messages(UserPid3)),
 
+    ?assertEqual(ok, chat_room_manager:close_room(RoomPid1)),
+    ?assertEqual([Room2], chat_room_manager:get_rooms()),
+    ?assertEqual({error, room_not_found}, chat_room_manager:get_history(RoomPid1)),
+    ?assertEqual({error, room_not_found}, chat_room_manager:get_users(RoomPid1)),
+    ?assertEqual({error, room_not_found}, chat_room_manager:send_message(RoomPid1, <<"Bob">>, <<"Hello">>)),
+
+    ?assertEqual(ok, chat_room_manager:close_room(RoomPid2)),
+    ?assertEqual([], chat_room_manager:get_rooms()),
+    ?assertEqual({error, room_not_found}, chat_room_manager:get_history(RoomPid2)),
+    ?assertEqual({error, room_not_found}, chat_room_manager:get_users(RoomPid2)),
+    ?assertEqual({error, room_not_found}, chat_room_manager:send_message(RoomPid2, <<"Bob">>, <<"Hello">>)),
+
     ok.
