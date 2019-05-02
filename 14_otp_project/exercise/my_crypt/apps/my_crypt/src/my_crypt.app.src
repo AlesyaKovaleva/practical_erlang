@@ -1,0 +1,19 @@
+{application, my_crypt,
+ [{description, "An OTP application"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {my_crypt_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[
+    {crypt_key, <<"GVXLCLF4nJ5qtcAHQHmx">>},
+    {hash_size, 16},
+    {hash_seed, <<213,45,132,64,76,32,76,0,0,234,32,15>>}
+  ]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
