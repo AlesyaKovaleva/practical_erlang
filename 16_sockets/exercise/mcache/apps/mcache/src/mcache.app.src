@@ -1,0 +1,19 @@
+{application, mcache,
+ [{description, "Mcache Service"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {mcache_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    lager
+   ]},
+  {env,[
+    {port, 1234},
+    {connections_count, 3}
+  ]},
+  {modules, []},
+
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
